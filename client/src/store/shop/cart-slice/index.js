@@ -1,6 +1,6 @@
 import axios from "axios";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-require('dotenv').config();
+
 
 const initialState = {
   cartItems: [],

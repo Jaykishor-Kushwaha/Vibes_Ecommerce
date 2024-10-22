@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { Button } from "../ui/button";
 import axios from "axios";
 import { Skeleton } from "../ui/skeleton";
-require('dotenv').config();
+
 
 function ProductImageUpload({
   imageFile,
