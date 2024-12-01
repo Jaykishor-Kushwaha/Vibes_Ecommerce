@@ -1,9 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 
-
-
-
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -13,11 +10,16 @@ cloudinary.config({
 const storage = new multer.memoryStorage();
 
 async function imageUploadUtil(file) {
-  const result = await cloudinary.uploader.upload(file, {
-    resource_type: "auto",
-  });
-
-  return result;
+  try {
+    const result = await cloudinary.uploader.upload(file, {
+      resource_type: "auto",
+    });
+    console.log(result); // Log the result for debugging
+    return result;
+  } catch (error) {
+    console.error("Error uploading to Cloudinary:", error);
+    throw error;
+  }
 }
 
 const upload = multer({ storage });
