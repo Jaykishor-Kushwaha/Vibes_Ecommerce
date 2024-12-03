@@ -15,8 +15,6 @@ const createOrder = async (req, res) => {
       totalAmount,
       orderDate,
       orderUpdateDate,
-      paymentId,
-      payerId,
       cartId,
     } = req.body;
 
@@ -26,8 +24,8 @@ const createOrder = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "${process.env.CLIENT_BASE_URI}/shop/paypal-return",
-        cancel_url: "${process.env.CLIENT_BASE_URI}/shop/paypal-cancel",
+        return_url: `${process.env.CLIENT_BASE_URI}/shop/paypal-return`,
+        cancel_url: `${process.env.CLIENT_BASE_URI}/shop/paypal-cancel`,
       },
       transactions: [
         {
@@ -44,18 +42,18 @@ const createOrder = async (req, res) => {
             currency: "USD",
             total: totalAmount.toFixed(2),
           },
-          description: "description",
+          description: "Order description",
         },
       ],
     };
 
     paypal.payment.create(create_payment_json, async (error, paymentInfo) => {
       if (error) {
-        console.log(error);
-
+        console.error("PayPal Payment Creation Error:", error.response);
         return res.status(500).json({
           success: false,
-          message: "Error while creating paypal payment",
+          message: "Error while creating PayPal payment",
+          error: error.response,
         });
       } else {
         const newlyCreatedOrder = new Order({
@@ -65,19 +63,15 @@ const createOrder = async (req, res) => {
           addressInfo,
           orderStatus,
           paymentMethod,
-          paymentStatus,
+          paymentStatus: "pending",
           totalAmount,
           orderDate,
           orderUpdateDate,
-          paymentId,
-          payerId,
         });
 
         await newlyCreatedOrder.save();
 
-        const approvalURL = paymentInfo.links.find(
-          (link) => link.rel === "approval_url"
-        ).href;
+        const approvalURL = paymentInfo.links.find((link) => link.rel === "approval_url").href;
 
         res.status(201).json({
           success: true,
@@ -87,10 +81,10 @@ const createOrder = async (req, res) => {
       }
     });
   } catch (e) {
-    console.log(e);
+    console.error("Create Order Error:", e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "An error occurred while creating the order",
     });
   }
 };
@@ -104,7 +98,7 @@ const capturePayment = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: "Order can not be found",
+        message: "Order not found",
       });
     }
 
@@ -119,12 +113,18 @@ const capturePayment = async (req, res) => {
       if (!product) {
         return res.status(404).json({
           success: false,
-          message: `Not enough stock for this product ${product.title}`,
+          message: `Product with ID ${item.productId} not found.`,
+        });
+      }
+
+      if (product.totalStock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Not enough stock for product ${product.title}.`,
         });
       }
 
       product.totalStock -= item.quantity;
-
       await product.save();
     }
 
@@ -139,10 +139,10 @@ const capturePayment = async (req, res) => {
       data: order,
     });
   } catch (e) {
-    console.log(e);
+    console.error("Capture Payment Error:", e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "An error occurred while capturing the payment",
     });
   }
 };
@@ -165,10 +165,10 @@ const getAllOrdersByUser = async (req, res) => {
       data: orders,
     });
   } catch (e) {
-    console.log(e);
+    console.error("Get All Orders Error:", e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "An error occurred while fetching orders",
     });
   }
 };
@@ -191,10 +191,10 @@ const getOrderDetails = async (req, res) => {
       data: order,
     });
   } catch (e) {
-    console.log(e);
+    console.error("Get Order Details Error:", e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "An error occurred while fetching order details",
     });
   }
 };

@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-
 const initialState = {
   approvalURL: null,
   isLoading: false,
@@ -10,14 +9,27 @@ const initialState = {
   orderDetails: null,
 };
 
+// export const createNewOrder = createAsyncThunk(
+//   "/order/createNewOrder",
+//   async (orderData) => {
+//     const response = await axios.post(
+//       `${import.meta.env.VITE_API_URI}/api/shop/order/create`,
+//       orderData
+//     );
+
+//     return response.data;
+//   }
+// );
+
 export const createNewOrder = createAsyncThunk(
   "/order/createNewOrder",
   async (orderData) => {
+    console.log("Order Data Sent:", orderData); // Debugging payload
     const response = await axios.post(
-      "${import.meta.env.VITE_API_URI}/api/shop/order/create",
+      `${import.meta.env.VITE_API_URI}/api/shop/order/create`,
       orderData
     );
-
+    console.log("API Response:", response.data); // Debugging response
     return response.data;
   }
 );
@@ -26,7 +38,7 @@ export const capturePayment = createAsyncThunk(
   "/order/capturePayment",
   async ({ paymentId, payerId, orderId }) => {
     const response = await axios.post(
-      "${import.meta.env.VITE_API_URI}/api/shop/order/capture",
+      `${import.meta.env.VITE_API_URI}/api/shop/order/capture`,
       {
         paymentId,
         payerId,
