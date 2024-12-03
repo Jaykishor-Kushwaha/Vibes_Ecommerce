@@ -1,4 +1,3 @@
-
 import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -18,6 +17,8 @@ function ProductImageUpload({
   isCustomStyling = false,
 }) {
   const inputRef = useRef(null);
+
+  const API_BASE_URL = import.meta.env.VITE_API_URI;
 
   function handleImageFileChange(event) {
     const selectedFile = event.target.files?.[0];
@@ -45,13 +46,19 @@ function ProductImageUpload({
     setImageLoadingState(true);
     const data = new FormData();
     data.append("my_file", imageFile);
-    const response = await axios.post(
-      "http://localhost:5000/api/admin/products/upload-image",
-      data
-    );
 
-    if (response?.data?.success) {
-      setUploadedImageUrl(response.data.result.url);
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/admin/products/upload-image`,
+        data
+      );
+
+      if (response?.data?.success) {
+        setUploadedImageUrl(response.data.result.url);
+      }
+    } catch (error) {
+      console.error("Image upload failed:", error);
+    } finally {
       setImageLoadingState(false);
     }
   }
